@@ -57,28 +57,15 @@ public class BoardingProcessor {
     bool needsHelp = passenger.NeedsHelp;
     int group = passenger.BoardingGroup;
 
-    if (Status != BoardingStatus.PlaneDeparted) {
-      if (isMilitary && Status == BoardingStatus.Boarding) {
-        return "Board Now via Priority Lane";
-      } else if (needsHelp && Status == BoardingStatus.Boarding) {
-        return "Board Now via Priority Lane";
-      } else if (Status == BoardingStatus.Boarding) {
-        if (CurrentBoardingGroup >= group) {
-          if (_priorityLaneGroups.Contains(group)) {
-            return "Board Now via Priority Lane";
-          } else {
-            return "Board Now";
-          }
-        } else {
-          return "Please Wait";
-        }
-      } else {
-        return "Boarding Not Started";
-      }
-    } else {
-      return "Flight Departed";
-    }
+    return Status switch {
+      BoardingStatus.PlaneDeparted => "Flight Departed",
+      BoardingStatus.NotStarted => "Boarding Not Started",
+      BoardingStatus.Boarding when isMilitary || needsHelp => "Board Now via Priority Lane",
+      BoardingStatus.Boarding when CurrentBoardingGroup < group => "Please Wait",
+      BoardingStatus.Boarding when _priorityLaneGroups.Contains(group) => "Board Now via Priority Lane",
+      BoardingStatus.Boarding => "Board Now",
+      _ => "Some other status",
+    };
   }
-
 }
 
